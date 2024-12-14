@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { supabase } from "../../../supabase";
 
 export default function Favorite() {
-
   interface Favorite {
     title: string;
     url: string;
@@ -12,6 +12,24 @@ export default function Favorite() {
   }
 
   const [favoriteData, setFavoriteData] = useState<Favorite[]>([]);
+
+  const fetchData = async () => {
+    const { data } = await supabase
+      .from("favorite")
+      .select("*")
+      .order("updated_at", { ascending: false }) // countの降順
+      .limit(10); // 10件に制限
+
+    if (!data) {
+      setFavoriteData([]);
+      return;
+    }
+    setFavoriteData(data); // データをそのままセット
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <div className="w-full h-screen overflow-y-auto">

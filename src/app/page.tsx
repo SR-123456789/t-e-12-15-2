@@ -1,6 +1,7 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
+import { supabase } from "../../supabase";
 
 export default function Home() {
   const fetchItems = async (keyword: string) => {
@@ -15,6 +16,18 @@ export default function Home() {
     } catch (error: any) {
     } finally {
     }
+  };
+
+  const upsertData = async (data: {
+    title: string;
+    url: string;
+    image_url: string;
+    updated_at: Date;
+  }) => {
+    const a = await supabase
+      .from("favorite")
+      .upsert(data, { onConflict: "title" });
+    return a;
   };
 
   useEffect(() => {
@@ -146,8 +159,7 @@ export default function Home() {
     },
   ];
   const [items, setItems] = useState(mockDataItems);
-
-
+  const [clickedList, setClickedList] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState(""); // 初期検索キーワード
 
   const handleSubmit = (e: any) => {
@@ -173,12 +185,32 @@ export default function Home() {
       </form>
       <div className="flex flex-wrap gap-4 flex justify-center">
         {items.map((item, index) => (
-          <Card
-            key={index}
-            name={item.Item.itemName}
-            url={item.Item.itemUrl}
-            image={item.Item.mediumImageUrls[0].imageUrl}
-          />
+          <div key={index} className={`flex-col flex justify-center`}>
+            <Card
+              name={item.Item.itemName}
+              url={item.Item.itemUrl}
+              image={item.Item.mediumImageUrls[0].imageUrl}
+            />
+            <button
+              className={`p-2 rounded-lg font-bold text-white ${
+                clickedList.includes(item.Item.itemName)
+                  ? "bg-gray-500"
+                  : "bg-red-300"
+              }`}
+              onClick={() => {
+                upsertData({
+                  title: item.Item.itemName,
+                  url: item.Item.itemUrl,
+                  image_url: item.Item.mediumImageUrls[0].imageUrl,
+                  updated_at: new Date(),
+                });
+                setClickedList((prev) => [...prev, item.Item.itemName]);
+              }}
+              disabled={clickedList.includes(item.Item.itemName)}
+            >
+              お気に入り
+            </button>
+          </div>
         ))}
       </div>
     </div>
