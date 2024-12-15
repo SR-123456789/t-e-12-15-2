@@ -38,6 +38,7 @@ export default function Home() {
   const mockDataItems = [
     {
       Item: {
+        
         affiliateRate: 3,
         affiliateUrl: "",
         asurakuArea: "",
